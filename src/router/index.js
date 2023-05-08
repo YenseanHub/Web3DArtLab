@@ -22,10 +22,12 @@ const router = createRouter({
     {
       path: '/markdown/:query',
       name: 'markdown',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/Markdown/MarkdownView.vue')
+    },
+    {
+      path: '/examples/:exampleId',
+      name: 'examples',
+      component: () => import('../views/ExampleView.vue')
     }
   ]
 })

@@ -15,7 +15,7 @@ import { RouterLink, RouterView } from 'vue-router'
 <style scoped>
 .el-container {
   width: 100%;
-  position: absolute;
+  position: relative;
   left: 0;
   top: 0;
   height: auto;
