@@ -1,0 +1,9 @@
+{
+  "智慧城市": {
+    "烟雾半球": "smokeSphere",
+    "燃烧火墙": "fireWall"
+  },
+  "标签": {
+    "精灵火焰特效": "sprites_fireyAuraEffect"
+  }
+}

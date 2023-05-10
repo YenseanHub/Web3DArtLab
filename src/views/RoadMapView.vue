@@ -110,6 +110,7 @@ function onDownloadImg() {
       </div>
     </div>
   </div>
+  <a class="roadmap-ref" href="https://github.com/objtube/front-end-roadmap" target="_blank" rel="noopener">Reference front-end-roadmap</a>
   <footer-mark />
 </template>
 
@@ -135,7 +136,13 @@ function onDownloadImg() {
   position: relative;
   left: 20%;
 }
-
+.roadmap-ref {
+  position:absolute;
+  top: 0px;
+  bottom: 0px;
+  height: 4.5vh;
+  font-size: 2.5vh;
+}
 .desc-container .explain-square {
   flex: 1;
   text-align: left;

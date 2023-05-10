@@ -1,0 +1,8 @@
+{
+  "插件 Addon": {
+    "测量": "measure"
+  },
+  "第三方库 ThirdParty": {
+    "高度热力图": "heatmap_height"
+  }
+}
