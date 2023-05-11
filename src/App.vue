@@ -15,10 +15,10 @@ import { RouterLink, RouterView } from 'vue-router'
 <style scoped>
 .el-container {
   width: 100%;
-  position: relative;
+  position: absolute;
   left: 0;
   top: 0;
-  height: auto;
+  height: 100%;
 }
 nav {
   width: 100%;

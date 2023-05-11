@@ -109,9 +109,10 @@ function onDownloadImg() {
         <canvas id="roadmapCanvas"></canvas>
       </div>
     </div>
+    <footer-mark />
   </div>
   <a class="roadmap-ref" href="https://github.com/objtube/front-end-roadmap" target="_blank" rel="noopener">Reference front-end-roadmap</a>
-  <footer-mark />
+  
 </template>
 
 

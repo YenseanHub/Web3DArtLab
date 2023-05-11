@@ -1,9 +1,14 @@
 {
   "智慧城市": {
+    "扩大圆柱": "expandCylinder",
+    "光线墙": "lightLineWall",
+    "流动光墙": "lightFlowWall",
+    "扫描雷达（纹理）": "radarTexture",
     "烟雾半球": "smokeSphere",
     "燃烧火墙": "fireWall"
   },
   "标签": {
+    "圆锥锚点": "coneAnchor",
     "精灵火焰特效": "sprites_fireyAuraEffect"
   }
 }

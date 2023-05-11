@@ -30,7 +30,7 @@ onMounted(() => {
       })
       titleList.push(ele)
       Object.keys(res.data[ele]).forEach((subEle) => {
-        var val = res.data[ele][subEle];
+        var val = res.data[ele][subEle]
         examleList[index].list.push({
           imgUrl: `/thumbnail/tree/${val}.jpg`,
           cardName: subEle,
@@ -41,7 +41,7 @@ onMounted(() => {
         }
       })
     })
-    activeNames = titleList;
+    activeNames = titleList
     assideKey.value++
   })
 })
@@ -50,7 +50,7 @@ function RedirectHtml(name) {
   const iframeView = document.getElementById('tree-container')
   if (null != iframeView) {
     iframeView.src = src
-    iframeView.style.display = 'unset';
+    iframeView.style.display = 'unset'
   }
 }
 </script>
@@ -58,7 +58,7 @@ function RedirectHtml(name) {
 <template>
   <el-container class="examples-container">
     <el-aside class="examples-asside">
-      <el-scrollbar>
+      <el-scrollbar class="examples-collapse">
         <el-collapse :key="assideKey" class="asside-collapse" v-model="activeNames">
           <el-collapse-item
             v-for="(item, key) in examleList"
@@ -90,19 +90,23 @@ function RedirectHtml(name) {
 
 <style scoped>
 .examples-container {
-  position: relative;
+  position: absolute;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 15% 85%;
 }
 .examples-asside {
-  width: 100%;
+  position: absolute;
+  width: 15%;
   height: 100%;
   border-right: 2px solid azure;
   font-size: 2vh;
+}
+.examples-collapse {
+  position: relative;
+  height: 100%;
 }
 :deep(.el-collapse) {
   --el-collapse-header-font-size: 1.8vh;
@@ -116,7 +120,9 @@ function RedirectHtml(name) {
   background-color: transparent;
 }
 .trees-iframe-container {
-  width: 100%;
+  position: relative;
+  left: 15%;
+  width: 85%;
   height: 100%;
   border: 0px;
 }
