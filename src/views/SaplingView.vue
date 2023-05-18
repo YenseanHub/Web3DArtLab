@@ -97,10 +97,10 @@ function RedirectHtml(name) {
   top: 0;
   width: 100%;
   height: 100%;
-  display: grid;
+  display: flex;
 }
 .examples-asside {
-  position: absolute;
+  position: relative;
   width: 15%;
   height: 100%;
   border-right: 2px solid azure;
@@ -123,7 +123,6 @@ function RedirectHtml(name) {
 }
 .saplings-iframe-container {
   position: relative;
-  left: 15%;
   width: 85%;
   height: 100%;
   border: 0px;

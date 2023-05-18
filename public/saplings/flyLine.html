@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Web3D Art Lab - flyLine</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			background-color: #000;
+			margin: 0px;
+			overflow: hidden;
+
+		}
+
+		#info {
+			position: absolute;
+			top: 0px;
+			width: 100%;
+			color: #ffffff;
+			padding: 5px;
+			font-family: Monospace;
+			font-size: 22px;
+			text-align: center;
+		}
+
+		a {
+			color: #ffffff;
+			text-decoration: none;
+		}
+
+		a:hover {
+			color: #0080ff;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="info">
+		<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a>
+		<a href="https://www.yensean.com" target="_blank" rel="noopener">Web3d Art Lab</a><br />
+	</div>
+	<!-- Import maps polyfill -->
+	<!-- Remove this when import maps will be widely supported -->
+	<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "/build/three.module.js",
+				"three/addons/": "/jsm/"
+			}
+		}
+	</script>
+
+	<script id="vertexShader" type="x-shader/x-vertex">
+		varying vec2 vUv;
+		attribute float percent;
+		uniform float u_time;
+		uniform float number;
+		uniform float speed;
+		uniform float length;
+		varying float opacity;
+		uniform float size;
+
+		void main()
+		{
+			vUv = uv;
+			vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+			float l = clamp(1.0-length,0.0,1.0);//空白部分长度
+
+			gl_PointSize = clamp(fract(percent*number + l - u_time*number*speed)-l ,0.0,1.) * size * (1./length);
+
+			opacity = gl_PointSize/size;
+			gl_Position = projectionMatrix * mvPosition;
+		}
+	</script>
+
+	<script id="fragmentShader" type="x-shader/x-fragment">
+		#ifdef GL_ES
+		precision mediump float;
+		#endif
+
+		varying float opacity;
+		uniform vec3 color;
+
+		void main(){
+			if(opacity <=0.2){
+				discard;
+			}
+			gl_FragColor = vec4(color,1.0);
+		}
+	</script>
+
+	<script type="module">
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		var renderer, scene, camera, material;
+
+		var spotLight, lightHelper, shadowCameraHelper;
+
+		let commonUniforms = {
+			u_time: { value: 0.0 },
+		};
+		var gui;
+
+		function init() {
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+			scene = new THREE.Scene();
+
+			camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 1000);
+			camera.position.set(150, 50, 150);
+
+			var controls = new OrbitControls(camera, renderer.domElement);
+			// controls.addEventListener('change', render);
+			controls.minDistance = 20;
+			controls.maxDistance = 500;
+			controls.enablePan = false;
+
+			var ambient = new THREE.AmbientLight(0xffffff, 1);
+			scene.add(ambient);
+
+			const curve1 = new THREE.CubicBezierCurve3(
+				new THREE.Vector3(0, 0, 0),
+				new THREE.Vector3(0, 50, 50),
+				new THREE.Vector3(0, 80, 80),
+				new THREE.Vector3(0, 0, 100)
+			);
+			const curve2 = new THREE.CubicBezierCurve3(
+				new THREE.Vector3(0, 0, 0),
+				new THREE.Vector3(50, 0, 50),
+				new THREE.Vector3(80, 0, 80),
+				new THREE.Vector3(0, 0, 100)
+			);
+			let curves = [curve1, curve2]
+			for (let curve of curves) {
+				initFlyLine(curve,
+					{
+						speed: 0.2,
+						number: Math.floor(Math.random() * 3 + 1),
+						color: randomVec3Color(),
+						size: 4.0
+					}, 1800)
+			}
+
+			scene.add(new THREE.AxesHelper(100));
+
+			// controls.target.copy( mesh.position );
+			controls.update();
+
+			window.addEventListener('resize', onResize, false);
+
+		}
+
+		function onResize() {
+
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+		}
+
+
+		// 根据curve和颜色 生成线条
+		/**
+		 * @param curve {THREE.Curve} 路径,
+		 * @param matSetting {Object} 材质配置项
+		 * @param pointsNumber {Number} 点的个数 越多越细致
+		 * */
+		function initFlyLine(curve, matSetting, pointsNumber) {
+			var points = curve.getPoints(pointsNumber);
+			var geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+			let length = points.length;
+			var percents = new Float32Array(length);
+			for (let i = 0; i < points.length; i += 1) {
+				percents[i] = i / length;
+			}
+			geometry.attributes.percent = new THREE.BufferAttribute(percents, 1);
+			let lineMaterial = initLineMaterial(matSetting);
+			var flyLine = new THREE.Points(geometry, lineMaterial);
+			scene.add(flyLine);
+		}
+
+		function initLineMaterial(setting) {
+			let number = setting ? Number(setting.number) || 1.0 : 1.0; // 在一个路径中同时存在的个数
+			let speed = setting ? Number(setting.speed) || 1.0 : 1.0; // 速度约大越快
+			let length = setting ? Number(setting.length) || 0.5 : 0.5; // 单根线的长度0-1之间1代表全满
+			let size = setting ? Number(setting.size) || 3.0 : 3.0; // 在最大的地方的大小 默认为3像素
+			let color = setting
+				? setting.color || new THREE.Vector3(0, 1, 1)
+				: new THREE.Vector3(0, 1, 1); // 颜色此处以Vector
+			let singleUniforms = {
+				u_time: commonUniforms.u_time,
+				number: { type: "f", value: number },
+				speed: { type: "f", value: speed },
+				length: { type: "f", value: length },
+				size: { type: "f", value: size },
+				color: { type: "v3", value: color },
+			};
+			let lineMaterial = new THREE.ShaderMaterial({
+				uniforms: singleUniforms,
+				vertexShader: document.getElementById("vertexShader").textContent,
+				fragmentShader:
+					document.getElementById("fragmentShader").textContent,
+				transparent: true,
+				//blending:THREE.AdditiveBlending,
+			});
+			return lineMaterial;
+		}
+
+		// 随机颜色值
+		function randomVec3Color() {
+			return new THREE.Vector3(
+				Math.random() * 0.6 + 0.4,
+				Math.random() * 0.6 + 0.4,
+				Math.random() * 0.6 + 0.4
+			)
+		}
+
+		var clock = new THREE.Clock();
+
+		function render() {
+			renderer.render(scene, camera);
+			commonUniforms.u_time.value += 0.01;
+			requestAnimationFrame(render);
+		}
+		init();
+
+		render();
+
+	</script>
+
+</body>
+
+</html>
