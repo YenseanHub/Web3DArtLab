@@ -1,6 +1,6 @@
 # Web3DArtLab
 W3DAL- main in web 3D/BIM digital art lab
-
+![image](public/thumbnail/saplings/coneAnchor.jpg)
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
