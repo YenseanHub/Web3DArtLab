@@ -1,6 +1,10 @@
 # Web3DArtLab
 W3DAL- main in web 3D/BIM digital art lab
 
+if you like, star ⭐ it ~Thank you 
+
+如果你喜欢，给我一个star ⭐ 吧
+
 example images
 
 ![image](public/thumbnail/saplings/coneAnchor.jpg)
@@ -21,7 +25,7 @@ This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur)
 
 ## Customize configuration
 
