@@ -1,6 +1,22 @@
 # Web3DArtLab
 W3DAL- main in web 3D/BIM digital art lab
+
+example images
+
 ![image](public/thumbnail/saplings/coneAnchor.jpg)
+![image](public/thumbnail/saplings/expandCylinder.jpg)
+![image](public/thumbnail/saplings/fireWall.jpg)
+![image](public/thumbnail/saplings/flyLine.jpg)
+![image](public/thumbnail/saplings/flyingDrone.jpg)
+![image](public/thumbnail/saplings/lightFlowWall.jpg)
+![image](public/thumbnail/saplings/lightLineWall.jpg)
+![image](public/thumbnail/saplings/radarTexture.jpg)
+![image](public/thumbnail/saplings/smokeSphere.jpg)
+![image](public/thumbnail/saplings/sprites_fireyAuraEffect.jpg)
+![image](public/thumbnail/tree/heatmap_height.jpg)
+![image](public/thumbnail/tree/measure.jpg)
+![image](public/thumbnail/tree/section.jpg)
+
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
