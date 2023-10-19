@@ -11,6 +11,7 @@
   },
   "标签": {
     "圆锥锚点": "coneAnchor",
-    "精灵火焰特效": "sprites_fireyAuraEffect"
+    "精灵火焰特效": "sprites_fireyAuraEffect",
+    "移动的PNG":"movingPng"
   }
 }
