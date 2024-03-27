@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Web3D Art Lab - MovingPng</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			background-color: #000;
+			margin: 0px;
+			overflow: hidden;
+
+		}
+
+		#info {
+			position: absolute;
+			top: 0px;
+			width: 100%;
+			color: #ffffff;
+			padding: 5px;
+			font-family: Monospace;
+			font-size: 22px;
+			text-align: center;
+		}
+
+		a {
+			color: #ffffff;
+			text-decoration: none;
+		}
+
+		a:hover {
+			color: #0080ff;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="info">
+		<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a>
+		<a href="https://www.yensean.com" target="_blank" rel="noopener">Web3d Art Lab</a><br />
+	</div>
+	<!-- Import maps polyfill -->
+	<!-- Remove this when import maps will be widely supported -->
+	<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "/build/three.module.js",
+				"three/addons/": "/jsm/"
+			}
+		}
+	</script>
+
+	<script type="module">
+		import * as THREE from 'three';
+		import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
+		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+		var renderer, scene, camera, material;
+		let Plane;
+		var gui;
+		let texture;
+		let textureOffset = 60 - 1;
+		const textureMat = new THREE.Vector2(6, 10)
+
+		function init() {
+
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			document.body.appendChild(renderer.domElement);
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+			scene = new THREE.Scene();
+
+			camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 1000);
+			camera.position.set(150, 50, 150);
+
+			var controls = new OrbitControls(camera, renderer.domElement);
+			// controls.addEventListener('change', render);
+			controls.minDistance = 20;
+			controls.maxDistance = 2000;
+			controls.enablePan = false;
+
+			var ambient = new THREE.AmbientLight(0xffffff, 1);
+			scene.add(ambient);
+
+			let geometry = new THREE.PlaneGeometry(50, 50);
+			// geometry.rotateX(-Math.PI / 2);
+			texture = new THREE.TextureLoader().load("/textures/series1.png");
+			texture.repeat.set(1 / 6, 1 / 10);
+			let material = new THREE.MeshLambertMaterial({
+				map: texture,
+				side: THREE.DoubleSide,
+				transparent: true,
+				depthTest: false,
+			});
+			let Plane = new THREE.Mesh(geometry, material);
+
+
+			// ConeGroup.scale.set(2, 2, 2);
+			scene.add(Plane)
+			scene.add(new THREE.AxesHelper(100));
+
+			// controls.target.copy( mesh.position );
+			controls.update();
+
+			window.addEventListener('resize', onResize, false);
+
+		}
+
+		function onResize() {
+
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+		}
+
+		var clock = new THREE.Clock();
+		
+		// 纹理的位移
+		setInterval(() => {
+			if (texture && textureOffset >= 0) {
+				// texture.offset.y > textureMat.y ? texture.offset.y = 0 : texture.offset.y += 1 / textureMat.y;
+				// texture.offset.x > textureMat.x ? texture.offset.x = 0 : texture.offset.x += 1 / textureMat.x;
+				texture.offset.set(parseInt(textureOffset / textureMat.y) / textureMat.x,
+					(textureOffset % textureMat.y) / textureMat.y)
+				textureOffset--;
+			} else {
+				textureOffset = textureMat.x * textureMat.y - 1;
+			}
+		}, 100)
+
+		function render() {
+			renderer.render(scene, camera);
+			requestAnimationFrame(render);
+		}
+
+		init();
+
+		render();
+
+	</script>
+
+</body>
+
+</html>
