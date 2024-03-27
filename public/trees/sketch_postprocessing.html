@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Web3D Art Lab - sketch_postprocessing</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+    <style>
+      body {
+        background-color: #000;
+        margin: 0px;
+        overflow: hidden;
+      }
+
+      #info {
+        position: absolute;
+        top: 0px;
+        width: 100%;
+        color: #ffffff;
+        padding: 5px;
+        font-family: Monospace;
+        font-size: 22px;
+        text-align: center;
+      }
+
+      a {
+        color: #ffffff;
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: #0080ff;
+      }
+
+      .webgl {
+        position: absolute;
+        top: 0;
+        left: 0;
+        outline: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <canvas class="webgl"></canvas>
+
+    <div id="info">
+      <a href="http://threejs.org" target="_blank" rel="noopener">three.js</a>
+      <a href="https://www.yensean.com" target="_blank" rel="noopener">Web3d Art Lab</a><br />
+    </div>
+    <!-- Import maps polyfill -->
+    <!-- Remove this when import maps will be widely supported -->
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "/build/three.module.js",
+          "three/addons/": "/jsm/"
+        }
+      }
+    </script>
+    <script src="/libs/heatmap.js"></script>
+
+    <script type="module">
+      import * as THREE from 'three'
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+      import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
+      import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
+      import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js'
+      // sketchPass
+      import sketchVS from '/addons/sketchShaders/vertex.js'
+      import sketchFS from '/addons/sketchShaders/fragment.js'
+      import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
+
+      var renderer, scene, camera, controls, effectComposer, renderPass
+
+      const gltfLoader = new GLTFLoader()
+      const cubeTextureLoader = new THREE.CubeTextureLoader()
+
+      var gui = new GUI()
+
+      function init() {
+        const canvas = document.querySelector('canvas.webgl')
+        renderer = new THREE.WebGLRenderer({
+          canvas: canvas,
+          antialias: true
+        })
+        renderer.shadowMap.enabled = true
+        renderer.shadowMap.type = THREE.PCFShadowMap
+        renderer.physicallyCorrectLights = true
+        renderer.outputEncoding = THREE.sRGBEncoding
+        renderer.toneMapping = THREE.ReinhardToneMapping
+        renderer.toneMappingExposure = 1.5
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+        scene = new THREE.Scene()
+        /**
+         * Camera
+         */
+        // Base camera
+        camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 1000)
+        camera.position.set(240, 240, -10)
+
+        controls = new OrbitControls(camera, canvas)
+        controls.addEventListener('change', render)
+        controls.minDistance = 20
+        controls.maxDistance = 1000
+        controls.enableDamping = true
+        /**
+         * Environment map
+         */
+        const environmentMap = cubeTextureLoader.load([
+          '/textures/environmentMaps/0/px.jpg',
+          '/textures/environmentMaps/0/nx.jpg',
+          '/textures/environmentMaps/0/py.jpg',
+          '/textures/environmentMaps/0/ny.jpg',
+          '/textures/environmentMaps/0/pz.jpg',
+          '/textures/environmentMaps/0/nz.jpg'
+        ])
+        environmentMap.encoding = THREE.sRGBEncoding
+
+        scene.background = environmentMap
+        scene.environment = environmentMap
+
+        /**
+         * load models
+         */
+        gltfLoader.load('/model/sample_project.gltf', (gltf) => {
+          gltf.scene.rotation.y = Math.PI * 0.5
+          scene.add(gltf.scene)
+        })
+
+        /**
+         * Lights
+         */
+        const directionalLight = new THREE.DirectionalLight('#ffffff', 2)
+        directionalLight.position.set(0.25, 3, -2.25)
+        scene.add(directionalLight)
+        /**
+         * Post processing
+         */
+        const renderTarget = new THREE.WebGLRenderTarget(800, 600)
+        // Effect composer
+        effectComposer = new EffectComposer(renderer, renderTarget)
+        effectComposer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        effectComposer.setSize(window.innerWidth, window.innerHeight)
+
+        // Render pass
+        renderPass = new RenderPass(scene, camera)
+        effectComposer.addPass(renderPass)
+        // sketch Pass
+        const SketchShader = {
+          uniforms: {
+            tDiffuse: { type: 't', value: null },
+            iResolution: {
+              type: 'v2',
+              value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+            },
+            MAGIC_GRAD_THRESH: { type: 'f', value: 0.01 }, // gradient threshold 梯度阈值
+            MAGIC_SENSITIVITY: { type: 'f', value: 10 }, // Sensitivity 敏感度
+            MAGIC_COLOR: { type: 'f', value: 0.5 } // color threshold 颜色阈值
+          },
+          vertexShader: sketchVS,
+          fragmentShader: sketchFS
+        }
+        const SketchPass = new ShaderPass(SketchShader)
+        effectComposer.addPass(SketchPass)
+
+        gui
+          .add(SketchPass.material.uniforms.MAGIC_GRAD_THRESH, 'value')
+          .min(0.0001)
+          .max(0.1)
+          .step(0.001)
+          .name('GRAD_THRESH')
+        gui
+          .add(SketchPass.material.uniforms.MAGIC_SENSITIVITY, 'value')
+          .min(0)
+          .max(25)
+          .step(1)
+          .name('SENSITIVITY')
+        gui
+          .add(SketchPass.material.uniforms.MAGIC_COLOR, 'value')
+          .min(0)
+          .max(1)
+          .step(0.1)
+          .name('COLOR')
+
+        var ambient = new THREE.AmbientLight(0xffffff, 2)
+        scene.add(ambient)
+
+        // controls.target.copy( mesh.position );
+        controls.update()
+
+        window.addEventListener('resize', onResize, false)
+      }
+
+      function onResize() {
+        camera.aspect = window.innerWidth / window.innerHeight
+        camera.updateProjectionMatrix()
+
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+        // Update effect composer
+        effectComposer.setSize(window.innerWidth, window.innerHeight)
+        effectComposer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+      }
+
+      function render() {
+        // Render
+        // renderer.render(scene, camera)
+        effectComposer.render()
+      }
+
+      init()
+
+      render()
+    </script>
+  </body>
+</html>

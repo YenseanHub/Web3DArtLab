@@ -5,5 +5,8 @@
   },
   "第三方库 ThirdParty": {
     "高度热力图": "heatmap_height"
+  },
+  "后处理 postProcessing": {
+    "sketch特效": "sketch_postprocessing"
   }
 }
